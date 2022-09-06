@@ -27,6 +27,12 @@ namespace GitLabApiClient.Internal.Queries
 
             if (options.FirstParent.HasValue)
                 query.Add("first_parent", options.FirstParent.Value);
+
+            if (options.PerPage.HasValue && options.PerPage > 0)
+                query.Add("per_page", options.PerPage.ToString());
+
+            if (options.Page.HasValue && options.Page > 0)
+                query.Add("page", options.Page.ToString());
         }
     }
 }
