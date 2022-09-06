@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using GitLabApiClient.Internal.Utilities;
+using GitLabApiClient.Models.AwardEmojis.Responses;
 
 namespace GitLabApiClient.Internal.Http
 {
@@ -17,6 +18,11 @@ namespace GitLabApiClient.Internal.Http
 
         public async Task<IList<T>> GetPagedList<T>(string url)
         {
+            if (url.Contains("per_page=") && url.Contains("page="))
+            {
+                return await GetList<T>(url);
+            }
+
             var result = new List<T>();
 
             //make first request and it will get available pages in the headers
@@ -38,6 +44,19 @@ namespace GitLabApiClient.Internal.Http
                 default:
                     return await GetTotalPagedList(url, totalPages, result);
             }
+        }
+
+        private async Task<IList<T>> GetList<T>(string url)
+        {
+            var result = new List<T>();
+
+            // If per_page and page are already specified in the url, use this
+            var response = await _requestor.GetWithHeaders<IList<T>>(url);
+            var results = response.Item1;
+
+            result.AddRange(results);
+
+            return result;
         }
 
         private async Task<IList<T>> GetNextPageList<T>(string url, int nextPage, List<T> result)
